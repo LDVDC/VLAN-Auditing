@@ -71,14 +71,14 @@ if [ $choice = vdc ]; then
     while true; do
         read answer
         if [[ $answer = [nN] ]]; then
-            for i in $vlans; do echo $i `mysql -u$mysqlUser -p$mysqlPass -P $mysqlPort -h $mysqlHost $mysqlDB -Nse 
-            "select display_text from networks where broadcast_uri='"vlan://$i"' and data_center_id='"$zoneid"' 
+            for i in $vlans; do echo $i `mysql -u$mysqlUser -p$mysqlPass -P $mysqlPort -h $mysqlHost $mysqlDB -Nse "select 
+            display_text from networks where broadcast_uri='"vlan://$i"' and data_center_id='"$zoneid"' 
             and removed is null order by created"`; done | tee $logFilePath >/dev/null
             echo "Done! Output saved to $logFilePath";
 	    exit 0;
         elif [[ $answer = [yY] ]]; then
-            for i in $vlans; do echo $i `mysql -u$mysqlUser -p$mysqlPass -P $mysqlPort -h $mysqlHost $mysqlDB -Nse 
-            "select display_text from networks where broadcast_uri='"vlan://$i"' and data_center_id='"$zoneid"' 
+            for i in $vlans; do echo $i `mysql -u$mysqlUser -p$mysqlPass -P $mysqlPort -h $mysqlHost $mysqlDB -Nse "select 
+            display_text from networks where broadcast_uri='"vlan://$i"' and data_center_id='"$zoneid"' 
             and removed is null order by created"`; done | tee $logFilePath
             echo "Done! Output saved to $logFilePath";
             exit 0;
