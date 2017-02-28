@@ -1,11 +1,20 @@
 #!/bin/bash
 # Author: Leigh Davies
-# Version: 0.1
+# Version History:
+#### 27/02/2017 0.1 - Basic script. Cloudstack checking implemented
+#### 28/02/2017 0.2 - Created git repo. Fixed log file blankspace bug. Added proper check for vlan_audit_funcs
 
 # This script hopes to automate the VLAN auditing process. For the moment it will just return info from CloudStack, but I hope to implement score checking as well.
+# IMPORTANT: Script is dependent on vlan_audit_funcs file for login details/zone names etc. Will not work without this!
 
+# Check for presence of functions file
+if [ ! -f $HOME/scripts/vlan_audit_funcs ]; then
+    echo "vlan_audit_funcs not found! Exiting script...";
+    exit 0;
+fi
 # Import functions from vlan_audit_funcs
 . $HOME/scripts/vlan_audit_funcs
+echo -e "$PRP""vlan_audit_funcs loaded$RST";
 
 # Get the name of the input file
 vlanFile=$1;
