@@ -2,9 +2,10 @@
 # Author: Leigh Davies
 # Version History:
 #### 27/02/2017 0.1 - Basic script. Cloudstack checking implemented
-#### 28/02/2017 0.2 - Created git repo. Fixed log file blankspace bug. Added proper check for vlan_audit_funcs
+#### 28/02/2017 0.2 - Looks prettier. Created git repo. Fixed log file blankspace bug. Better logging in general. 
+####                  Added proper check for vlan_audit_funcs. Added initial menu for the type of check to run.
 
-# This script hopes to automate the VLAN auditing process. For the moment it will just return info from CloudStack, but I hope to implement score checking as well.
+# This script hopes to automate the VLAN auditing process. 
 # IMPORTANT: Script is dependent on vlan_audit_funcs file for login details/zone names etc. Will not work without this!
 
 # Check for presence of functions file
@@ -45,30 +46,48 @@ echo -e "$PRP""Using list of VLANs starting:$RST"
 echo "$vlans" | head
 echo "..."
 echo -e "$PRP""The list is$BLD `echo "$vlans" | wc -l` "$RST$PRP"VLANs long$RST"
-	
+
+# What type of check do we want to run?
+echo "Where do you want to check?"
+checkType;
+
 # Choose the zone
 echo "Please choose the zone to check:"
-zonechoice;
+zoneChoice;
 
-# Generate the query and run it on the selected cloudstack db
-# Returns a list of VLANs and the display_text of the corresponding network, if there is a network present
-dbquery;
-logFile="${zone,,}_output"
-logFileFixed="${logFile//[[:blank:]]/}"
-echo -e "$RED""Do you want to output the result to console? $BLD(y/n)$RST$RED The output will be saved to the logfile ($logFileFixed) either way$RST"
-while true; do
-    read answer
-    if [[ $answer = [nN] ]]; then
-        for i in $vlans; do echo $i `mysql -u$mysqlUser -p$mysqlPass -P $mysqlPort -h $mysqlHost $mysqlDB -Nse "select display_text from networks where broadcast_uri='"vlan://$i"' and data_center_id='"$zoneid"' and removed is null order by created"`; done | tee $logFileFixed >/dev/null
-	      echo "Done! Output saved to $logFileFixed";
-	      exit 0;
-    elif [[ $answer = [yY] ]]; then
-	      for i in $vlans; do echo $i `mysql -u$mysqlUser -p$mysqlPass -P $mysqlPort -h $mysqlHost $mysqlDB -Nse "select display_text from networks where broadcast_uri='"vlan://$i"' and data_center_id='"$zoneid"' and removed is null order by created"`; done | tee $logFileFixed
-	      echo "Done! Output saved to $logFileFixed";
-	      exit 0;
-    else
-	      echo "Please answer y/n"
-	      continue
-    fi
-    break
-done
+if [ $choice = vdc ]; then
+    # Generate the query and run it on the selected cloudstack db
+    # Returns a list of VLANs and the display_text of the corresponding network, if there is a network present
+    dbQuery;
+    # Sort out the log file name and location
+    logDate=`date +%Y-%m-%d:%H:%M:%S`
+    logFile="${zone,,}_output_vdc."$logDate
+    logFileFixed="${logFile//[[:blank:]]/}"
+    logFilePath="$HOME/scripts/vlanauditlogs/$logFileFixed"
+    # Make the log directory
+    mkdir $HOME/scripts/vlanauditlogs/ &> /dev/null
+    echo -e "$RED""Do you want to output the result to console? $BLD(y/n)$RST$RED"
+    echo -e "The output will be saved to the logfile ($logFileFixed) either way$RST"
+    while true; do
+        read answer
+        if [[ $answer = [nN] ]]; then
+            for i in $vlans; do echo $i `mysql -u$mysqlUser -p$mysqlPass -P $mysqlPort -h $mysqlHost $mysqlDB -Nse 
+            "select display_text from networks where broadcast_uri='"vlan://$i"' and data_center_id='"$zoneid"' 
+            and removed is null order by created"`; done | tee $logFilePath >/dev/null
+            echo "Done! Output saved to $logFilePath";
+	    exit 0;
+        elif [[ $answer = [yY] ]]; then
+            for i in $vlans; do echo $i `mysql -u$mysqlUser -p$mysqlPass -P $mysqlPort -h $mysqlHost $mysqlDB -Nse 
+            "select display_text from networks where broadcast_uri='"vlan://$i"' and data_center_id='"$zoneid"' 
+            and removed is null order by created"`; done | tee $logFilePath
+            echo "Done! Output saved to $logFilePath";
+            exit 0;
+        else
+            echo "Please answer y/n"
+           continue
+        fi
+        break
+    done
+elif [ $choice = sc ]; then
+    echo "This is where the score check goes..."; 
+fi
