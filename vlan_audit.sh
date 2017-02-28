@@ -16,6 +16,8 @@ fi
 # Import functions from vlan_audit_funcs
 . $HOME/scripts/vlan_audit_funcs
 echo -e "$PRP""vlan_audit_funcs loaded$RST";
+# Make the log directory
+mkdir $HOME/scripts/vlanauditlogs/ &> /dev/null
 
 # Get the name of the input file
 vlanFile=$1;
@@ -64,8 +66,6 @@ if [ $choice = vdc ]; then
     logFile="${zone,,}_output_vdc."$logDate
     logFileFixed="${logFile//[[:blank:]]/}"
     logFilePath="$HOME/scripts/vlanauditlogs/$logFileFixed"
-    # Make the log directory
-    mkdir $HOME/scripts/vlanauditlogs/ &> /dev/null
     echo -e "$RED""Do you want to output the result to console? $BLD(y/n)$RST$RED"
     echo -e "The output will be saved to the logfile ($logFileFixed) either way$RST"
     while true; do
@@ -88,6 +88,6 @@ if [ $choice = vdc ]; then
         fi
         break
     done
-elif [ $choice = sc ]; then
-    echo "This is where the score check goes..."; 
+elif [ $choice = sc ]; then 
+    scoreGet;
 fi
