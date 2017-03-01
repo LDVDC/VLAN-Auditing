@@ -4,6 +4,7 @@
 #### 27/02/2017 0.1 - Basic script. Cloudstack checking implemented
 #### 28/02/2017 0.2 - Looks prettier. Created git repo. Fixed log file blankspace bug. Better logging in general. 
 ####                  Added proper check for vlan_audit_funcs. Added initial menu for the type of check to run.
+#### 01/03/2017 0.3 - Added score check
 
 # This script hopes to automate the VLAN auditing process. 
 # IMPORTANT: Script is dependent on vlan_audit_funcs file for login details/zone names etc. Will not work without this!
@@ -27,17 +28,17 @@ if [[ -z $vlanFile ]]; then
     echo "You have not specified a list of VLANs. Do you want to use 1-1000? (y/n)"
     while true; do
         read answer
-	      if [[ $answer = [nN] ]]; then
-	          echo "Exiting..."
-	          exit 0;
-	      elif [[ $answer = [yY] ]]; then
-	          echo "OK, using VLANs 1-1000"
-	          vlans=$(seq 1000);
+        if [[ $answer = [nN] ]]; then
+            echo "Exiting..."
+            exit 0;
+        elif [[ $answer = [yY] ]]; then
+            echo "OK, using VLANs 1-1000"
+            vlans=$(seq 1000);
        	else 
-	          echo "Please answer y/n"
-	          continue
-	      fi
-	  break
+            echo "Please answer y/n"
+            continue
+        fi
+        break
     done
 # Otherwise put the contents of the file into the list
 else vlans=$(cat $vlanFile)
@@ -59,7 +60,7 @@ zoneChoice;
 
 if [ $choice = vdc ]; then
     # Generate the query and run it on the selected cloudstack db
-    # Returns a list of VLANs and the display_text of the corresponding network, if there is a network present
+    # Returns a list of VLANs and the display_text of the corresponding network if there is a network present
     dbQuery;
     # Sort out the log file name and location
     logDate=`date +%Y-%m-%d:%H:%M:%S`
@@ -90,4 +91,19 @@ if [ $choice = vdc ]; then
     done
 elif [ $choice = sc ]; then 
     scoreGet;
+    scoreSearch;
+    echo -e "$PRP""Output saved to $HOME/scripts/vlanauditlogs/$scoreName-checkoutput. Do you want to print the output now? $BLD (y/n)$RST"
+    while true; do
+        read answer
+        if [[ $answer = [nN] ]]; then
+            echo "Exiting."
+            exit 0;
+        elif [[ $answer = [yY] ]]; then
+            cat $HOME/scripts/vlanauditlogs/$scoreName-checkoutput
+            exit 0;
+        else
+            echo "Please answer y/n"
+            continue
+        fi
+    done
 fi
